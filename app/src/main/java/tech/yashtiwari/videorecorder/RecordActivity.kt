@@ -2,13 +2,17 @@ package tech.yashtiwari.videorecorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraX
 import androidx.camera.core.Preview
 import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -28,10 +32,10 @@ import java.util.concurrent.Executors
 
 class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
-    private lateinit var videoCapture : VideoCapture
+    private  var videoCapture : VideoCapture? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-    private var fileName : String = ""
+    private var fileName : String? = null
     private var duration : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,10 +49,9 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         // Set up the listener for take photo button
         btnRecord.setOnClickListener { startRecording() }
 
-        val bundle = intent?.extras
-        bundle?.apply {
-            fileName = bundle["name"] as String
-            duration = bundle["duration"] as Int
+        intent?.apply {
+            fileName = this.getStringExtra("name")
+            duration = this.getIntExtra("duration", 0)
         }
 
         outputDirectory = Utility.getOutputDirectory(this)
@@ -60,7 +63,6 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     override fun onResume() {
         super.onResume()
-
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -72,7 +74,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("RestrictedApi")
     private fun stopRecording() {
-        videoCapture.stopRecording()
+        videoCapture?.stopRecording()
     }
 
     override fun onRequestPermissionsResult(
@@ -95,29 +97,28 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("RestrictedApi")
     private fun startRecording() {
-        val file = Utility.createFile(outputDirectory)
-        videoCapture.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
-            override fun onVideoSaved(file: File) {
-                Log.i(TAG, "Video File : $file")
-                Utility.callScanIntent(this@RecordActivity, file.path)
-            }
-            override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                Log.i(TAG, "Video Error: $message")
-            }
-        })
+        fileName?.apply {
+            val file = Utility.createFile(outputDirectory, this)
+            videoCapture?.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
+                override fun onVideoSaved(file: File) {
+                    Log.i(TAG, "Video File : $file")
+                    Utility.callScanIntent(this@RecordActivity, file.path)
+                }
+                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                    Log.i(TAG, "Video Error: $message")
+                }
+            })
+        }
     }
 
     @SuppressLint("RestrictedApi")
     private fun startCamera(cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            videoCapture = VideoCapture.Builder().apply {
-                setTargetRotation(viewFinder.display.rotation)
-            }.build()
+            videoCapture = VideoCapture.Builder().build()
 
             // Preview
             val preview = Preview.Builder()
@@ -145,15 +146,22 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    override fun onPause() {
+        super.onPause()
+
+    }
+
     override fun onDestroy() {
-        super.onDestroy()
         cameraExecutor.shutdown()
+        super.onDestroy()
     }
 
     companion object {
         private const val TAG = "CameraXBasic"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.RECORD_AUDIO)
     }
 
 

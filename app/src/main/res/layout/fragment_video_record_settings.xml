@@ -7,6 +7,9 @@
         <variable
             name="viewmodel"
             type= "tech.yashtiwari.videorecorder.viewmodels.VMVideoRecordSettings" />
+
+        <import type="android.view.View" />
+
     </data>
 
     <LinearLayout
@@ -23,6 +26,7 @@
             android:text="@string/enter_recording_name"/>
 
         <EditText
+            android:id="@+id/edtFileName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@{ viewmodel.obsVideoName }"/>
@@ -30,6 +34,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:orientation="horizontal"
+            android:layout_marginTop="16dp"
             >
 
             <TextView
@@ -41,8 +46,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{viewmodel.obsDuration}"
-                tools:text="15"
+                tools:text="@{String.valueOf( viewmodel.obsDuration )}"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:gravity="end"
@@ -60,6 +64,7 @@
         </LinearLayout>
 
         <com.google.android.material.slider.Slider
+            android:id="@+id/slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:valueTo="180"
@@ -67,6 +72,15 @@
             android:value="@{ viewmodel.obsDuration }"
             android:stepSize="1"
             />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:visibility="@{ viewmodel.obsIsFileExists ? View.VISIBLE : View.INVISIBLE }"
+            tools:visibility="invisible"
+            android:text="@string/file_already_exists"
+            android:textColor="@android:color/holo_red_dark"/>
 
         <androidx.cardview.widget.CardView
             android:layout_width="80dp"
@@ -84,9 +98,6 @@
                 android:padding="0dp"
                 />
         </androidx.cardview.widget.CardView>
-
-
-
 
     </LinearLayout>
 </layout>
