@@ -1,53 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".fragment.VideoRecordSettingsFragment"
-    android:padding="@dimen/screen_padding"
-    android:gravity="center" >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/enter_recording_name"/>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+    <data>
+        <variable
+            name="viewmodel"
+            type= "tech.yashtiwari.videorecorder.viewmodels.VMVideoRecordSettings" />
+    </data>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Duration"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".fragment.VideoRecordSettingsFragment"
+        android:padding="@dimen/screen_padding"
+        android:gravity="center" >
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Duration"/>
+            android:text="@string/enter_recording_name"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{ viewmodel.obsVideoName }"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Duration"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{viewmodel.obsDuration}"
+                tools:text="15"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:gravity="end"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="sec"
+                android:layout_marginStart="4dp"
+                android:textColor="@android:color/black"
+                android:gravity="end"
+                />
+
+        </LinearLayout>
+
+        <com.google.android.material.slider.Slider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueTo="180"
+            android:valueFrom="15"
+            android:value="@{ viewmodel.obsDuration }"
+            android:stepSize="1"
+            />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:cardCornerRadius="40dp"
+            android:layout_marginTop="16dp"
+            >
+            <ImageButton
+                android:id="@+id/ibRecord"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/record_icon"
+                android:background="@android:color/transparent"
+                android:scaleType="centerCrop"
+                android:padding="0dp"
+                />
+        </androidx.cardview.widget.CardView>
+
+
+
+
     </LinearLayout>
+</layout>
 
-    <com.google.android.material.slider.Slider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:valueTo="180"
-        android:valueFrom="15"
-        android:value="15"
-        android:stepSize="1"
-        />
-
-    <ImageButton
-        android:layout_width="98dp"
-        android:layout_height="98dp"
-        android:src="@drawable/record_icon"
-        android:scaleType="fitCenter"
-        android:padding="0dp"
-        />
-
-
-
-</LinearLayout>

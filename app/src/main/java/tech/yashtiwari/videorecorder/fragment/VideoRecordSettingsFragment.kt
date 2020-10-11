@@ -1,41 +1,44 @@
 package tech.yashtiwari.videorecorder.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import tech.yashtiwari.videorecorder.R
+import tech.yashtiwari.videorecorder.RecordActivity
+import tech.yashtiwari.videorecorder.databinding.FragmentVideoRecordSettingsBinding
+import tech.yashtiwari.videorecorder.viewmodels.VMVideoRecordSettings
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [VideoRecordSettingsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class VideoRecordSettingsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private lateinit var binding : FragmentVideoRecordSettingsBinding
+    private val viewModel by viewModels<VMVideoRecordSettings>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_video_record_settings, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_video_record_settings, container, false)
+        binding.ibRecord.setOnClickListener{_ -> openRecordActivity()}
+        return binding.root
+    }
+
+    private fun openRecordActivity() {
+        val intent = Intent(activity, RecordActivity::class.java)
+        with(intent){
+            val bundle = Bundle()
+            bundle.putInt("duration", viewModel.obsDuration.get())
+            bundle.putString("name", viewModel.obsVideoName.get())
+            putExtras(bundle)
+        }
+        startActivity(intent)
     }
 
     companion object {

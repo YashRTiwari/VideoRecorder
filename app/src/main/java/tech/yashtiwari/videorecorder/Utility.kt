@@ -22,9 +22,12 @@ object Utility {
         return if (mediaDir != null && mediaDir.exists()) mediaDir else appContext.filesDir
     }
 
-    fun createFile(baseFolder: File, format: String = FILENAME, extension: String = VIDEO_EXTENSION) =
-        File(baseFolder, SimpleDateFormat(format, Locale.US)
-            .format(System.currentTimeMillis()) + extension)
+//    fun createFile(baseFolder: File, format: String = FILENAME, extension: String = VIDEO_EXTENSION) =
+//        File(baseFolder, SimpleDateFormat(format, Locale.US)
+//            .format(System.currentTimeMillis()) + extension)
+
+    fun createFile(baseFolder: File, fileName: String = FILENAME, extension: String = VIDEO_EXTENSION) =
+        File(baseFolder,  fileName+ extension)
 
     fun callScanIntent(context: Context?, path: String) {
         MediaScannerConnection.scanFile(
