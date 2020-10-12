@@ -15,30 +15,49 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:orientation="horizontal"
+    <ToggleButton
+        android:id="@+id/ibVideoCapture"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/record_btn_bg"
+        android:src="@android:drawable/ic_menu_camera"
+        android:textOff=""
+        android:textOn=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="24dp" />
+
+    <ImageButton
+        android:id="@+id/ibRotate"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="48dp"
         android:layout_marginBottom="24dp"
-        >
+        android:background="@android:color/transparent"
+        android:src="@drawable/camera_flip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/btnRecord"
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/ibVideoCapture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/tvTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Record"
-             />
-
-        <Button
-            android:id="@+id/btnPause"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="Pause"
-            />
-    </LinearLayout>
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="4dp"
+            android:text="1:00" />
+    </androidx.cardview.widget.CardView>
 
 
 

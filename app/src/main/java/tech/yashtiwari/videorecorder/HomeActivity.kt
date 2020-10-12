@@ -17,7 +17,8 @@ class HomeActivity : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when(position) {
                 0 -> "Record"
-                else -> "Gallery"
+                1 -> "Gallery"
+                else -> TODO("Provide the functionality for $position")
             }
         }.attach()
 

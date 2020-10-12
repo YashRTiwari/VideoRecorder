@@ -2,24 +2,24 @@ package tech.yashtiwari.videorecorder
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.Log
-import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraX
 import androidx.camera.core.Preview
 import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_record.*
+import tech.yashtiwari.videorecorder.viewmodelfactory.VMFRecordActivity
+import tech.yashtiwari.videorecorder.viewmodels.VMRecordActivity
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -37,6 +37,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var cameraExecutor: ExecutorService
     private var fileName : String? = null
     private var duration : Int = 0
+    private var currentCameraSelected : CameraSelector? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +47,13 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         supportActionBar?.hide();
 
+
         // Set up the listener for take photo button
-        btnRecord.setOnClickListener { startRecording() }
+        ibVideoCapture.setOnCheckedChangeListener{ _, isChecked ->
+            if (isChecked) startRecording()
+            else stopRecording()
+        }
+        ibRotate.setOnClickListener { flipCamera() }
 
         intent?.apply {
             fileName = this.getStringExtra("name")
@@ -57,8 +63,13 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         outputDirectory = Utility.getOutputDirectory(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        btnRecord.setOnClickListener{ startRecording() }
-        btnPause.setOnClickListener { stopRecording()}
+    }
+
+    private fun flipCamera() {
+        if (currentCameraSelected == CameraSelector.DEFAULT_BACK_CAMERA)
+            startCamera(CameraSelector.DEFAULT_FRONT_CAMERA)
+        else
+            startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
     }
 
     override fun onResume() {
@@ -97,6 +108,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("RestrictedApi")
     private fun startRecording() {
+
         fileName?.apply {
             val file = Utility.createFile(outputDirectory, this)
             videoCapture?.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
@@ -113,6 +125,9 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("RestrictedApi")
     private fun startCamera(cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA) {
+
+        currentCameraSelected = cameraSelector
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
