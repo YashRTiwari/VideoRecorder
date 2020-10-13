@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
@@ -15,10 +16,10 @@ import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_record.*
-import tech.yashtiwari.videorecorder.viewmodelfactory.VMFRecordActivity
+import tech.yashtiwari.videorecorder.databinding.ActivityRecordBinding
 import tech.yashtiwari.videorecorder.viewmodels.VMRecordActivity
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -38,6 +39,9 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private var fileName : String? = null
     private var duration : Int = 0
     private var currentCameraSelected : CameraSelector? = null
+    private var timer : CountDownTimer? = null
+    private val viewModel: VMRecordActivity by viewModels()
+    private lateinit var binding: ActivityRecordBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,22 +51,32 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         supportActionBar?.hide();
 
+        binding = DataBindingUtil.setContentView(this@RecordActivity, R.layout.activity_record)
+        binding.viewModel = viewModel
 
-        // Set up the listener for take photo button
         ibVideoCapture.setOnCheckedChangeListener{ _, isChecked ->
-            if (isChecked) startRecording()
-            else stopRecording()
+
+            if (!isChecked) stopRecording()
+            timer = object : CountDownTimer((duration.toLong() + 1) * 1000, 1000) { // 1s Buffer time
+                override fun onTick(millisUntilFinished: Long) {
+                    viewModel.setLeftDuration((millisUntilFinished/1000).toInt())
+                }
+                override fun onFinish() {
+                    stopRecording()
+                }
+            }
+            startRecording()
         }
+
         ibRotate.setOnClickListener { flipCamera() }
 
         intent?.apply {
             fileName = this.getStringExtra("name")
-            duration = this.getIntExtra("duration", 0)
+            duration = this.getIntExtra("duration", 0).also { viewModel.setLeftDuration(it) }
         }
 
         outputDirectory = Utility.getOutputDirectory(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
-
     }
 
     private fun flipCamera() {
@@ -86,7 +100,11 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     @SuppressLint("RestrictedApi")
     private fun stopRecording() {
         videoCapture?.stopRecording()
+        timer?.cancel()
+        viewModel.setIsRecording(false)
     }
+
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -106,6 +124,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
+
     @SuppressLint("RestrictedApi")
     private fun startRecording() {
 
@@ -115,11 +134,15 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                 override fun onVideoSaved(file: File) {
                     Log.i(TAG, "Video File : $file")
                     Utility.callScanIntent(this@RecordActivity, file.path)
+                    finish()
                 }
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
                     Log.i(TAG, "Video Error: $message")
                 }
-            })
+            }).also {
+                timer?.start()
+                viewModel.setIsRecording(true)
+            }
         }
     }
 
@@ -127,7 +150,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private fun startCamera(cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA) {
 
         currentCameraSelected = cameraSelector
-
+        viewModel.setIsCameraReady(false)
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -142,15 +165,16 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                     it.setSurfaceProvider(viewFinder.createSurfaceProvider())
                 }
 
-            // Select back camera as a default
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, videoCapture)
+                viewModel.setIsCameraReady(true)
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
+                viewModel.setIsCameraReady(false)
             }
         }, ContextCompat.getMainExecutor(this))
 
@@ -163,7 +187,15 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     override fun onPause() {
         super.onPause()
+        timer?.cancel()
+    }
 
+    override fun onBackPressed() {
+        if (viewModel.obsIsRecording.get()){
+            stopRecording()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onDestroy() {

@@ -17,7 +17,8 @@ public class PagerAdapter(val fragmentActivity: FragmentActivity ) :FragmentStat
     override fun createFragment(position: Int): Fragment {
         return when (position){
             0 -> VideoRecordSettingsFragment.newInstance()
-            else -> VideoListFragment()
+            1 -> VideoListFragment.newInstance()
+            else -> TODO("handle other fragment values")
         }
     }
 

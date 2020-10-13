@@ -1,24 +1,18 @@
 package tech.yashtiwari.videorecorder.viewmodels
 
-import android.util.Log
+import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableInt
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-public class VMRecordActivity (val duration : Int) : ViewModel(){
+class VMRecordActivity : ViewModel(){
 
-    public var obsDuration : ObservableInt = ObservableInt(duration)
+    var obsDuration : ObservableInt = ObservableInt(0)
+    var obsIsRecording: ObservableBoolean = ObservableBoolean(false)
+    var obsIsCameraReady : ObservableBoolean = ObservableBoolean(false)
 
-    public fun updateDuration(value : Int) = obsDuration.set(value)
-
-    fun startTimer() {
-        viewModelScope.launch {
-            delay(5000)
-            Log.d(TAG, "startTimer: ")
-        }
-    }
+    fun setLeftDuration(time: Int) = obsDuration.set(time)
+    fun setIsRecording(value : Boolean) = obsIsRecording.set(value)
+    fun setIsCameraReady(value : Boolean) = obsIsCameraReady.set(value)
 
     companion object {
         private val TAG : String = "VMRecordActivity"

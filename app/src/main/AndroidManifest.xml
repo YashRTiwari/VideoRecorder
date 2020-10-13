@@ -26,8 +26,7 @@
 
         <activity
             android:name=".RecordActivity"
-            android:screenOrientation="fullSensor"
-            android:configChanges="orientation|screenSize">
+            android:screenOrientation="portrait">
         </activity>
 
         <provider
