@@ -2,6 +2,7 @@ package tech.yashtiwari.videorecorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -18,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_record.*
 import tech.yashtiwari.videorecorder.databinding.ActivityRecordBinding
 import tech.yashtiwari.videorecorder.viewmodels.VMRecordActivity
@@ -42,6 +44,8 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private var timer : CountDownTimer? = null
     private val viewModel: VMRecordActivity by viewModels()
     private lateinit var binding: ActivityRecordBinding
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +54,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         supportActionBar?.hide();
+        localBroadcastManager = LocalBroadcastManager.getInstance(this)
 
         binding = DataBindingUtil.setContentView(this@RecordActivity, R.layout.activity_record)
         binding.viewModel = viewModel
