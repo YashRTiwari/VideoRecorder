@@ -2,6 +2,7 @@ package tech.yashtiwari.videorecorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -18,6 +19,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_record.*
@@ -109,8 +111,6 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         viewModel.setIsRecording(false)
     }
 
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -137,9 +137,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             val file = Utility.createFile(outputDirectory, this)
             videoCapture?.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
                 override fun onVideoSaved(file: File) {
-                    Log.i(TAG, "Video File : $file")
-                    Utility.callScanIntent(this@RecordActivity, file.path)
-                    finish()
+                    closeActivity(file.path)
                 }
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
                     Log.i(TAG, "Video Error: $message")
@@ -149,6 +147,19 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                 viewModel.setIsRecording(true)
             }
         }
+    }
+
+    private fun closeActivity(path: String , error: Boolean = false) {
+        val intent = Intent()
+        with(intent){
+            if (!error){
+                putExtra("path", path)
+                setResult(Activity.RESULT_OK, this)
+            } else {
+                setResult(Activity.RESULT_CANCELED, this)
+            }
+        }
+        finish()
     }
 
     @SuppressLint("RestrictedApi")

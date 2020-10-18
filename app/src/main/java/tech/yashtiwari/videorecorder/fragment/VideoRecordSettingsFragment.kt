@@ -1,16 +1,16 @@
 package tech.yashtiwari.videorecorder.fragment
 
+import android.R.attr
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import kotlinx.android.synthetic.main.fragment_video_record_settings.*
 import tech.yashtiwari.videorecorder.R
@@ -19,18 +19,15 @@ import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.databinding.FragmentVideoRecordSettingsBinding
 import tech.yashtiwari.videorecorder.viewmodels.VMVideoRecordSettings
 
+
 class VideoRecordSettingsFragment : Fragment() {
 
     private lateinit var binding : FragmentVideoRecordSettingsBinding
     private val viewModel by viewModels<VMVideoRecordSettings>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_video_record_settings, container, false)
-        binding.ibRecord.setOnClickListener{_ -> openRecordActivity()}
+        binding.ibRecord.setOnClickListener{ openRecordActivity()}
         binding.viewmodel = viewModel
         return binding.root
     }
@@ -44,16 +41,26 @@ class VideoRecordSettingsFragment : Fragment() {
     private fun openRecordActivity() {
         if (!viewModel.IsFilevalid(Utility.getOutputDirectory(requireContext()), edtFileName.text.toString())) return
         val intent = Intent(activity, RecordActivity::class.java)
-        startActivity(
+        startActivityForResult(
             with(intent){
                 this.putExtra("duration", viewModel.obsDuration.get())
                 this.putExtra("name", viewModel.obsVideoName.get())
-            })
+            }, REQUEST_VIDEO_PATH)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_VIDEO_PATH && resultCode == Activity.RESULT_OK) {
+            data?.getStringExtra("path")?.let { Utility.callScanIntent(requireContext(), it)  }
+        } else if (requestCode == REQUEST_VIDEO_PATH && resultCode == Activity.RESULT_CANCELED) {
+            Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
         @JvmStatic
         fun newInstance() = VideoRecordSettingsFragment()
         private val TAG = "VideoRecordSettings"
+        private val REQUEST_VIDEO_PATH = 1000
     }
 }

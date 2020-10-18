@@ -12,12 +12,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.fragment_video_list.*
 import kotlinx.android.synthetic.main.fragment_video_list.view.*
 import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.adapter.VideoListAdapter
+import tech.yashtiwari.videorecorder.viewmodels.VMVideoList
 import java.io.File
 
 
@@ -25,33 +30,30 @@ class VideoListFragment : Fragment() {
 
     private val NUMBER_COLUMN = 2
     private lateinit var viewAdapter : VideoListAdapter
-
+    private val viewModel : VMVideoList by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
-
-        val viewManager = GridLayoutManager(requireContext(), NUMBER_COLUMN)
-        viewAdapter = VideoListAdapter(Utility.getVideoList(requireContext(), Utility.getOutputDirectory(requireContext())))
         val view = inflater.inflate(R.layout.fragment_video_list, container, false)
-        view.recyclerView .apply {
-            setHasFixedSize(true)
-            layoutManager = viewManager
-            adapter = viewAdapter
-        }
-
+        viewAdapter = VideoListAdapter()
+        observeLiveData()
         return view
+    }
+
+    private fun observeLiveData(){
+        viewModel.mlVideoList.observe(viewLifecycleOwner, Observer { t ->
+            rvVideoList.apply {
+                val viewManager = GridLayoutManager(requireContext(), NUMBER_COLUMN)
+                setHasFixedSize(true)
+                layoutManager = viewManager
+                viewAdapter.addNewList(t)
+                adapter = viewAdapter
+            }
+        })
     }
 
     override fun onStart() {
         super.onStart()
-
-        // Work around - right now couldnt implement event listener
-        viewAdapter.addNewList(Utility.getVideoList(requireContext(), Utility.getOutputDirectory(requireContext())))
-    }
-
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        viewModel.checkIfNewFileIsAdded()
     }
 
     companion object {

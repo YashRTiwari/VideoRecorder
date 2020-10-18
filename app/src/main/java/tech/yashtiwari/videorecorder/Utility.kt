@@ -23,11 +23,10 @@ object Utility {
     private const val DATE_OUT_FORMAT = "yyyy/MM/dd HH:mm"
 
     fun getOutputDirectory(context: Context): File {
-        val appContext = context.applicationContext
-        val mediaDir = appContext.externalMediaDirs.firstOrNull()?.let {
-            File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() }
+        val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+            File(it, context.resources.getString(R.string.app_name)).apply { mkdirs() }
         }
-        return if (mediaDir != null && mediaDir.exists()) mediaDir else appContext.filesDir
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
     }
 
     fun createFile(baseFolder: File, fileName: String, extension: String = VIDEO_EXTENSION) =
@@ -48,14 +47,15 @@ object Utility {
         }
     }
 
-    fun getVideoList(context: Context, directory: File): ArrayList<VideoModel> {
+    fun getVideoList(): ArrayList<VideoModel> {
         val listOfVideos = ArrayList<VideoModel>()
+        val context = VRApplication.applicationContext()
+        val directory = VRApplication.getOutputDirectory()
         if (!directory.exists()) return listOfVideos
 
         directory.listFiles()?.forEach {
             listOfVideos.add(convertFileToVideoModelObject(context, it))
         }
-
         return listOfVideos
     }
 

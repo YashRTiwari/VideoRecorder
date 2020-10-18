@@ -13,7 +13,9 @@ import tech.yashtiwari.videorecorder.VideoModel
 import tech.yashtiwari.videorecorder.databinding.RvVideoListItemBinding
 import java.io.File
 
-class VideoListAdapter(var items : ArrayList<VideoModel>) : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()  {
+class VideoListAdapter() : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()  {
+
+    private var items : ArrayList<VideoModel> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup,
                                     viewType: Int): VideoListAdapter.MyViewHolder {
