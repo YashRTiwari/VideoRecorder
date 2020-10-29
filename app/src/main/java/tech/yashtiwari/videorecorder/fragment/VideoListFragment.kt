@@ -20,13 +20,16 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_video_list.*
 import kotlinx.android.synthetic.main.fragment_video_list.view.*
 import tech.yashtiwari.videorecorder.R
+import tech.yashtiwari.videorecorder.RecordActivity
 import tech.yashtiwari.videorecorder.Utility
+import tech.yashtiwari.videorecorder.VideoModel
+import tech.yashtiwari.videorecorder.activity.PlayerActivity
 import tech.yashtiwari.videorecorder.adapter.VideoListAdapter
 import tech.yashtiwari.videorecorder.viewmodels.VMVideoList
 import java.io.File
 
 
-class VideoListFragment : Fragment() {
+class VideoListFragment : Fragment(), VideoListAdapter.ClickHandler {
 
     private val NUMBER_COLUMN = 2
     private lateinit var viewAdapter : VideoListAdapter
@@ -34,7 +37,7 @@ class VideoListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_video_list, container, false)
-        viewAdapter = VideoListAdapter()
+        viewAdapter = VideoListAdapter(this)
         observeLiveData()
         return view
     }
@@ -61,6 +64,12 @@ class VideoListFragment : Fragment() {
         fun newInstance() = VideoListFragment()
 
         private val TAG = "VideoListFragment"
+    }
+
+    override fun onVideoClicked(model: VideoModel) {
+        val intent = Intent(activity, PlayerActivity::class.java)
+        intent.putExtra("path", model.file.absolutePath)
+        startActivity(intent)
     }
 
 }

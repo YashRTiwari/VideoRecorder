@@ -9,7 +9,7 @@ import tech.yashtiwari.videorecorder.VideoModel
 
 class VMVideoList : ViewModel(){
 
-    var mlVideoList : MutableLiveData<ArrayList<VideoModel>> = MutableLiveData()
+    var mlVideoList : MutableLiveData<List<VideoModel>> = MutableLiveData()
 
     init {
         mlVideoList.value = Utility.getVideoList()

@@ -18,6 +18,7 @@ object Utility {
 
     private const val FILENAME = "yyyy_MM_dd_HH_mm_ss"
     private const val VIDEO_EXTENSION = ".mp4"
+    public const val IMAGE_EXTENSION = ".jpeg"
     private  const val TAG = "Utility"
     private const val DATE_INBUILT_FORMAT = "yyyyMMdd'T'HHmmss.SSS'Z'"
     private const val DATE_OUT_FORMAT = "yyyy/MM/dd HH:mm"
@@ -47,7 +48,7 @@ object Utility {
         }
     }
 
-    fun getVideoList(): ArrayList<VideoModel> {
+    fun getVideoList(): List<VideoModel> {
         val listOfVideos = ArrayList<VideoModel>()
         val context = VRApplication.applicationContext()
         val directory = VRApplication.getOutputDirectory()
@@ -56,7 +57,10 @@ object Utility {
         directory.listFiles()?.forEach {
             listOfVideos.add(convertFileToVideoModelObject(context, it))
         }
-        return listOfVideos
+
+        var sortedList = listOfVideos.sortedWith(compareBy({ it.time }))
+
+        return sortedList
     }
 
     fun convertFileToVideoModelObject(context: Context, file : File) : VideoModel{

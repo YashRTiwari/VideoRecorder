@@ -13,9 +13,13 @@ import tech.yashtiwari.videorecorder.VideoModel
 import tech.yashtiwari.videorecorder.databinding.RvVideoListItemBinding
 import java.io.File
 
-class VideoListAdapter() : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()  {
+class VideoListAdapter(val clickHandler:  ClickHandler) : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()  {
 
-    private var items : ArrayList<VideoModel> = ArrayList()
+    private var items : List<VideoModel> = ArrayList()
+
+    interface ClickHandler{
+        public fun onVideoClicked(model: VideoModel)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup,
                                     viewType: Int): VideoListAdapter.MyViewHolder {
@@ -23,19 +27,14 @@ class VideoListAdapter() : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()
         return MyViewHolder(view)
     }
 
-    fun addNewFile(file : VideoModel){
-        items.add(0, file)
-        notifyItemInserted(0)
-    }
-
-    fun addNewList(list : ArrayList<VideoModel>){
+    fun addNewList(list : List<VideoModel>){
         items = list;
         notifyDataSetChanged()
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], clickHandler)
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -43,7 +42,7 @@ class VideoListAdapter() : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()
 
     class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view){
 
-        fun bind(video : VideoModel){
+        fun bind(video : VideoModel, handler: ClickHandler){
             with(view){
                 tvName.text = video.name
                 tvDuration.text = video.duration
@@ -54,6 +53,8 @@ class VideoListAdapter() : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()
                     .load(Uri.fromFile(video.file))
                     .thumbnail(0.1F)
                     .into(videoThumbnail)
+
+                videoItem.setOnClickListener{ _ -> handler.onVideoClicked(video)  }
             }
         }
 

@@ -3,21 +3,23 @@ package tech.yashtiwari.videorecorder
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
+import android.view.OrientationEventListener
+import android.view.Surface
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.core.VideoCapture
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toFile
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
@@ -37,7 +39,8 @@ import java.util.concurrent.Executors
 
 class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
-    private  var videoCapture : VideoCapture? = null
+    private  lateinit var videoCapture : VideoCapture
+    private lateinit var imageCapture : ImageCapture
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var fileName : String? = null
@@ -76,14 +79,30 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         ibRotate.setOnClickListener { flipCamera() }
+        ibImageCapture.setOnClickListener { takeImage() }
 
         intent?.apply {
             fileName = this.getStringExtra("name")
             duration = this.getIntExtra("duration", 0).also { viewModel.setLeftDuration(it) }
         }
 
+
+        val orientationEventListener = object : OrientationEventListener(this as Context) {
+            override fun onOrientationChanged(orientation : Int) {
+                val rotation : Int = when (orientation) {
+                    in 45..134 -> Surface.ROTATION_270
+                    in 135..224 -> Surface.ROTATION_180
+                    in 225..314 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+                imageCapture.targetRotation = rotation
+            }
+        }
+        orientationEventListener.enable()
+
         outputDirectory = Utility.getOutputDirectory(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
+
     }
 
     private fun flipCamera() {
@@ -106,7 +125,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("RestrictedApi")
     private fun stopRecording() {
-        videoCapture?.stopRecording()
+        videoCapture.stopRecording()
         timer?.cancel()
         viewModel.setIsRecording(false)
     }
@@ -149,6 +168,24 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
+    fun takeImage() {
+        fileName?.apply {
+            val file = Utility.createFile(outputDirectory, this, Utility.IMAGE_EXTENSION)
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+            imageCapture.takePicture(outputFileOptions, cameraExecutor,
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(error: ImageCaptureException)
+                    {
+                        throw error
+                    }
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        closeActivity(file.path)
+                    }
+                })
+        }
+
+    }
+
     private fun closeActivity(path: String , error: Boolean = false) {
         val intent = Intent()
         with(intent){
@@ -172,7 +209,12 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
+
             videoCapture = VideoCapture.Builder().build()
+
+            imageCapture = ImageCapture.Builder().build()
+
+
 
             // Preview
             val preview = Preview.Builder()
@@ -186,7 +228,7 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, videoCapture)
+                    this, cameraSelector, preview, videoCapture, imageCapture)
                 viewModel.setIsCameraReady(true)
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
