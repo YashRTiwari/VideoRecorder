@@ -18,7 +18,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activity.PlayerActivity"></activity>
         <activity
-            android:name=".HomeActivity"
+            android:name=".activity.HomeActivity"
             android:screenOrientation="fullSensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RecordActivity"
+            android:name=".activity.RecordActivity"
             android:screenOrientation="portrait"></activity>
 
         <provider

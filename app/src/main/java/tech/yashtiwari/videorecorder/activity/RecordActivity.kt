@@ -1,4 +1,4 @@
-package tech.yashtiwari.videorecorder
+package tech.yashtiwari.videorecorder.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -19,12 +19,12 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toFile
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_record.*
+import tech.yashtiwari.videorecorder.R
+import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.databinding.ActivityRecordBinding
 import tech.yashtiwari.videorecorder.viewmodels.VMRecordActivity
 import java.io.File
@@ -61,7 +61,9 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         supportActionBar?.hide();
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
 
-        binding = DataBindingUtil.setContentView(this@RecordActivity, R.layout.activity_record)
+        binding = DataBindingUtil.setContentView(this@RecordActivity,
+            R.layout.activity_record
+        )
         binding.viewModel = viewModel
 
         ibVideoCapture.setOnCheckedChangeListener{ _, isChecked ->
@@ -100,7 +102,8 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
         }
         orientationEventListener.enable()
 
-        outputDirectory = Utility.getOutputDirectory(this)
+        outputDirectory =
+            Utility.getOutputDirectory(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
     }
@@ -118,7 +121,10 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                this,
+                REQUIRED_PERMISSIONS,
+                REQUEST_CODE_PERMISSIONS
+            )
         }
     }
 
@@ -153,7 +159,10 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private fun startRecording() {
 
         fileName?.apply {
-            val file = Utility.createFile(outputDirectory, this)
+            val file = Utility.createFile(
+                outputDirectory,
+                this
+            )
             videoCapture?.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
                 override fun onVideoSaved(file: File) {
                     closeActivity(file.path)
@@ -170,7 +179,11 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
 
     fun takeImage() {
         fileName?.apply {
-            val file = Utility.createFile(outputDirectory, this, Utility.IMAGE_EXTENSION)
+            val file = Utility.createFile(
+                outputDirectory,
+                this,
+                Utility.IMAGE_EXTENSION
+            )
             val outputFileOptions = ImageCapture.OutputFileOptions.Builder(file).build()
             imageCapture.takePicture(outputFileOptions, cameraExecutor,
                 object : ImageCapture.OnImageSavedCallback {

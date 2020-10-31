@@ -1,6 +1,5 @@
 package tech.yashtiwari.videorecorder.fragment
 
-import android.R.attr
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import kotlinx.android.synthetic.main.fragment_video_record_settings.*
 import tech.yashtiwari.videorecorder.R
-import tech.yashtiwari.videorecorder.RecordActivity
+import tech.yashtiwari.videorecorder.activity.RecordActivity
 import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.databinding.FragmentVideoRecordSettingsBinding
 import tech.yashtiwari.videorecorder.viewmodels.VMVideoRecordSettings

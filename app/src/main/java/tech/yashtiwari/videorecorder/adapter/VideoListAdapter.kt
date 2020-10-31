@@ -4,49 +4,69 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.rv_video_list_item.view.*
+import tech.yashtiwari.videorecorder.Media
 import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.VideoModel
-import tech.yashtiwari.videorecorder.databinding.RvVideoListItemBinding
-import java.io.File
 
-class VideoListAdapter(val clickHandler:  ClickHandler) : RecyclerView.Adapter<VideoListAdapter.MyViewHolder>()  {
+class VideoListAdapter(val clickHandler: ClickHandler) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var items : List<VideoModel> = ArrayList()
+    private var items: List<VideoModel> = ArrayList()
+    private val IMAGE = 0
+    private val VIDEO = 1
 
-    interface ClickHandler{
+    interface ClickHandler {
         public fun onVideoClicked(model: VideoModel)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup,
-                                    viewType: Int): VideoListAdapter.MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.rv_video_list_item, parent, false)
-        return MyViewHolder(view)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RecyclerView.ViewHolder {
+        return when (viewType) {
+            IMAGE -> ImageViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.rv_image_list_item, parent, false)
+            )
+            VIDEO -> VideoViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.rv_video_list_item, parent, false)
+            )
+            else -> TODO("Invalid Media Type")
+        }
     }
 
-    fun addNewList(list : List<VideoModel>){
+    fun addNewList(list: List<VideoModel>) {
         items = list;
         notifyDataSetChanged()
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(items[position], clickHandler)
+    override fun getItemViewType(position: Int): Int {
+        return when (items[position].TYPE) {
+            Media.PICTURE -> IMAGE
+            Media.VIDEO -> VIDEO
+        }
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (items[position].TYPE) {
+            Media.VIDEO -> (holder as VideoViewHolder).bind(items[position], clickHandler)
+            Media.PICTURE -> (holder as ImageViewHolder).bind(items[position], clickHandler)
+        }
+    }
+
     override fun getItemCount() = items.size
 
-    class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view){
+    class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(video : VideoModel, handler: ClickHandler){
-            with(view){
+        fun bind(video: VideoModel, handler: ClickHandler) {
+            with(view) {
                 tvName.text = video.name
                 tvDuration.text = video.duration
-                video.time?.apply{
+                video.time?.apply {
                     tvTime.text = this
                 }
                 Glide.with(context)
@@ -54,7 +74,26 @@ class VideoListAdapter(val clickHandler:  ClickHandler) : RecyclerView.Adapter<V
                     .thumbnail(0.1F)
                     .into(videoThumbnail)
 
-                videoItem.setOnClickListener{ _ -> handler.onVideoClicked(video)  }
+                videoItem.setOnClickListener { _ -> handler.onVideoClicked(video) }
+            }
+        }
+
+    }
+
+    class ImageViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+
+        fun bind(video: VideoModel, handler: ClickHandler) {
+            with(view) {
+                tvName.text = video.name
+                video.time?.apply {
+                    tvTime.text = this
+                }
+                Glide.with(context)
+                    .load(Uri.fromFile(video.file))
+                    .thumbnail(0.1F)
+                    .into(videoThumbnail)
+
+                videoItem.setOnClickListener { _ -> handler.onVideoClicked(video) }
             }
         }
 

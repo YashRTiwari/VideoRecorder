@@ -12,7 +12,14 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-data class VideoModel(val name: String, val duration: String, val time: String?, val file : File)
+enum class Media {
+    VIDEO, PICTURE
+}
+data class VideoModel(val name: String,
+                      val duration: String,
+                      val time: String?,
+                      val file : File,
+                        val TYPE : Media)
 
 object Utility {
 
@@ -55,7 +62,8 @@ object Utility {
         if (!directory.exists()) return listOfVideos
 
         directory.listFiles()?.forEach {
-            listOfVideos.add(convertFileToVideoModelObject(context, it))
+            var file : VideoModel? = convertFileToVideoModelObject(context, it)
+            file?.let { listOfVideos.add(file) }
         }
 
         var sortedList = listOfVideos.sortedWith(compareBy({ it.time }))
@@ -63,19 +71,25 @@ object Utility {
         return sortedList
     }
 
-    fun convertFileToVideoModelObject(context: Context, file : File) : VideoModel{
+    fun convertFileToVideoModelObject(context: Context, file : File) : VideoModel? {
         return file.let {
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, Uri.parse(it.absolutePath))
-            val duration =
-                getTimeInMinSeconds(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
-            val time: Date? =
-                getReadableDate(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE))
-            val stringTime =
-                time?.let { SimpleDateFormat(DATE_OUT_FORMAT, Locale.getDefault()).format(it) }
-            retriever.release()
 
-            VideoModel(it.name, duration, stringTime, it)
+            if(file.name.contains(IMAGE_EXTENSION)){
+                VideoModel(it.name, "", "", it, Media.PICTURE)
+            } else if(file.name.contains(VIDEO_EXTENSION)) {
+                val retriever = MediaMetadataRetriever()
+                retriever.setDataSource(context, Uri.parse(it.absolutePath))
+                val duration = getTimeInMinSeconds(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
+                val time: Date? =
+                    getReadableDate(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE))
+                val stringTime =
+                    time?.let { SimpleDateFormat(DATE_OUT_FORMAT, Locale.getDefault()).format(it) }
+                retriever.release()
+
+                VideoModel(it.name, duration, stringTime, it, Media.VIDEO)
+            } else {
+                return null
+            }
         }
     }
 
