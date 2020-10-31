@@ -1,22 +1,25 @@
 package tech.yashtiwari.videorecorder.db
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.lifecycle.LiveData
+import androidx.room.*
 
 @Dao
 interface MediaDAO {
 
     @Query("SELECT * FROM media")
-    fun getAll(): List<Media>
+    fun getAll(): LiveData<List<Media>>
 
-    @Query("SELECT * FROM media WHERE file_name LIKE :fileName")
-    fun findByName(fileName: String): List<Media>
+//    @Query("SELECT * FROM media WHERE name LIKE :fileName")
+//    suspend fun getMediaByName(fileName: String): LiveData<List<Media>>
 
-    @Insert
-    fun insert(media: Media)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(media: Media)
 
     @Delete
-    fun delete(media: Media)
+    suspend fun delete(media: Media)
+
+    @Query("DELETE FROM media")
+    suspend fun deleteAll()
+
+
 }

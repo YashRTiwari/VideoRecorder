@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.rv_video_list_item.view.*
-import tech.yashtiwari.videorecorder.Media
+import tech.yashtiwari.videorecorder.MediaType
 import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.VideoModel
 
@@ -46,15 +46,15 @@ class VideoListAdapter(val clickHandler: ClickHandler) :
 
     override fun getItemViewType(position: Int): Int {
         return when (items[position].TYPE) {
-            Media.PICTURE -> IMAGE
-            Media.VIDEO -> VIDEO
+            MediaType.PICTURE -> IMAGE
+            MediaType.VIDEO -> VIDEO
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (items[position].TYPE) {
-            Media.VIDEO -> (holder as VideoViewHolder).bind(items[position], clickHandler)
-            Media.PICTURE -> (holder as ImageViewHolder).bind(items[position], clickHandler)
+            MediaType.VIDEO -> (holder as VideoViewHolder).bind(items[position], clickHandler)
+            MediaType.PICTURE -> (holder as ImageViewHolder).bind(items[position], clickHandler)
         }
     }
 

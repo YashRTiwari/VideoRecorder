@@ -1,18 +1,25 @@
 package tech.yashtiwari.videorecorder.viewmodels
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.VRApplication
 import tech.yashtiwari.videorecorder.VideoModel
+import tech.yashtiwari.videorecorder.db.Media
+import tech.yashtiwari.videorecorder.db.MediaDatabase
+import tech.yashtiwari.videorecorder.db.MediaRepository
 
-class VMVideoList : ViewModel(){
+class VMVideoList(application: Application) : AndroidViewModel(application) {
 
-    var mlVideoList : MutableLiveData<List<VideoModel>> = MutableLiveData()
+    val mlVideoList : MutableLiveData<List<VideoModel>> = MutableLiveData()
+    val mlMediaList : LiveData<List<Media>>
+    private val repository: MediaRepository
 
     init {
-        mlVideoList.value = Utility.getVideoList()
+//        mlVideoList.value = Utility.getVideoList()
+        val mediaDao = MediaDatabase.getDatabase(application, viewModelScope).mediaDao()
+        repository = MediaRepository(mediaDao)
+        mlMediaList = repository.allMedia
     }
 
     fun checkIfNewFileIsAdded() {

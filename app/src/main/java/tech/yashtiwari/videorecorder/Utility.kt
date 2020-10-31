@@ -6,20 +6,19 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.util.Log
 import java.io.File
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-enum class Media {
+public enum class MediaType {
     VIDEO, PICTURE
 }
 data class VideoModel(val name: String,
                       val duration: String,
                       val time: String?,
                       val file : File,
-                        val TYPE : Media)
+                        val TYPE : MediaType)
 
 object Utility {
 
@@ -75,7 +74,7 @@ object Utility {
         return file.let {
 
             if(file.name.contains(IMAGE_EXTENSION)){
-                VideoModel(it.name, "", "", it, Media.PICTURE)
+                VideoModel(it.name, "", "", it, MediaType.PICTURE)
             } else if(file.name.contains(VIDEO_EXTENSION)) {
                 val retriever = MediaMetadataRetriever()
                 retriever.setDataSource(context, Uri.parse(it.absolutePath))
@@ -86,7 +85,7 @@ object Utility {
                     time?.let { SimpleDateFormat(DATE_OUT_FORMAT, Locale.getDefault()).format(it) }
                 retriever.release()
 
-                VideoModel(it.name, duration, stringTime, it, Media.VIDEO)
+                VideoModel(it.name, duration, stringTime, it, MediaType.VIDEO)
             } else {
                 return null
             }
