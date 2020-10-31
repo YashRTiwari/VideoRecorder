@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_player.*
 import tech.yashtiwari.videorecorder.R
+import tech.yashtiwari.videorecorder.db.Media
 
 class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,11 +19,13 @@ class PlayerActivity : AppCompatActivity() {
         controller.setMediaPlayer(videoView)
         videoView.setMediaController(controller)
 
-        intent = null
-        intent?.extras?.let {
-            val path : String = it["path"].toString()
-            runVideo(path)
+        intent?.getParcelableExtra<Media>("media")?.let {
+            handleMedia(it)
         } ?: Toast.makeText(this, "Nope", Toast.LENGTH_SHORT).show()
+
+    }
+
+    private fun handleMedia(media: Media) {
 
     }
 
@@ -35,21 +38,12 @@ class PlayerActivity : AppCompatActivity() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    // Shows the system bars by removing all the flags
-    // except for the ones that make the content appear under the system bars.
-    private fun showSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-    }
-
     private fun releasePlayer() {
         videoView.stopPlayback()
     }
 
     private fun runVideo(path : String){
         videoView.setVideoPath(path)
-
         videoView.start()
     }
 }

@@ -10,16 +10,18 @@ import kotlinx.android.synthetic.main.rv_video_list_item.view.*
 import tech.yashtiwari.videorecorder.MediaType
 import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.VideoModel
+import tech.yashtiwari.videorecorder.db.Media
+import java.io.File
 
 class VideoListAdapter(val clickHandler: ClickHandler) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var items: List<VideoModel> = ArrayList()
+    private var items: List<Media> = ArrayList()
     private val IMAGE = 0
     private val VIDEO = 1
 
     interface ClickHandler {
-        public fun onVideoClicked(model: VideoModel)
+        public fun onVideoClicked(model: Media)
     }
 
     override fun onCreateViewHolder(
@@ -39,22 +41,23 @@ class VideoListAdapter(val clickHandler: ClickHandler) :
         }
     }
 
-    fun addNewList(list: List<VideoModel>) {
+    fun addNewList(list: List<Media>) {
         items = list;
         notifyDataSetChanged()
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (items[position].TYPE) {
-            MediaType.PICTURE -> IMAGE
-            MediaType.VIDEO -> VIDEO
+        return when (items[position].type) {
+            MediaType.PICTURE.name -> IMAGE
+            MediaType.VIDEO.name -> VIDEO
+            else -> TODO("Invalid Media Type")
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (items[position].TYPE) {
-            MediaType.VIDEO -> (holder as VideoViewHolder).bind(items[position], clickHandler)
-            MediaType.PICTURE -> (holder as ImageViewHolder).bind(items[position], clickHandler)
+        when (items[position].type) {
+            MediaType.VIDEO.name -> (holder as VideoViewHolder).bind(items[position], clickHandler)
+            MediaType.PICTURE.name -> (holder as ImageViewHolder).bind(items[position], clickHandler)
         }
     }
 
@@ -62,15 +65,13 @@ class VideoListAdapter(val clickHandler: ClickHandler) :
 
     class VideoViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(video: VideoModel, handler: ClickHandler) {
+        fun bind(video: Media, handler: ClickHandler) {
             with(view) {
                 tvName.text = video.name
-                tvDuration.text = video.duration
-                video.time?.apply {
-                    tvTime.text = this
-                }
+                tvDuration.text = video.duration.toString()
+                tvTime.text = video.time
                 Glide.with(context)
-                    .load(Uri.fromFile(video.file))
+                    .load(Uri.fromFile(File(video.path)))
                     .thumbnail(0.1F)
                     .into(videoThumbnail)
 
@@ -82,18 +83,17 @@ class VideoListAdapter(val clickHandler: ClickHandler) :
 
     class ImageViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(video: VideoModel, handler: ClickHandler) {
+        fun bind(video: Media, handler: ClickHandler) {
             with(view) {
                 tvName.text = video.name
-                video.time?.apply {
-                    tvTime.text = this
-                }
+                tvTime.text = video.time
                 Glide.with(context)
-                    .load(Uri.fromFile(video.file))
+                    .load(Uri.fromFile(File(video.path)))
                     .thumbnail(0.1F)
                     .into(videoThumbnail)
 
-                videoItem.setOnClickListener { _ -> handler.onVideoClicked(video) }
+                videoItem.setOnClickListener { _ ->
+                    handler.onVideoClicked(video) }
             }
         }
 

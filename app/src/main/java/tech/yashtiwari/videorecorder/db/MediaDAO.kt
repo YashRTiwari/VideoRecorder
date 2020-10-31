@@ -9,8 +9,8 @@ interface MediaDAO {
     @Query("SELECT * FROM media")
     fun getAll(): LiveData<List<Media>>
 
-//    @Query("SELECT * FROM media WHERE name LIKE :fileName")
-//    suspend fun getMediaByName(fileName: String): LiveData<List<Media>>
+    @Query("SELECT * FROM media WHERE name LIKE :fileName")
+    suspend fun getMediaByName(fileName: String): Media?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(media: Media)

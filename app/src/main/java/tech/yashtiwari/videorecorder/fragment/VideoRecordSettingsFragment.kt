@@ -40,26 +40,17 @@ class VideoRecordSettingsFragment : Fragment() {
     private fun openRecordActivity() {
         if (!viewModel.IsFilevalid(Utility.getOutputDirectory(requireContext()), edtFileName.text.toString())) return
         val intent = Intent(activity, RecordActivity::class.java)
-        startActivityForResult(
+        startActivity(
             with(intent){
                 this.putExtra("duration", viewModel.obsDuration.get())
                 this.putExtra("name", viewModel.obsVideoName.get())
-            }, REQUEST_VIDEO_PATH)
+            })
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_VIDEO_PATH && resultCode == Activity.RESULT_OK) {
-            data?.getStringExtra("path")?.let { Utility.callScanIntent(requireContext(), it)  }
-        } else if (requestCode == REQUEST_VIDEO_PATH && resultCode == Activity.RESULT_CANCELED) {
-            Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     companion object {
         @JvmStatic
         fun newInstance() = VideoRecordSettingsFragment()
         private val TAG = "VideoRecordSettings"
-        private val REQUEST_VIDEO_PATH = 1000
     }
 }

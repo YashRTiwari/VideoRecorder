@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 // Annotates class to be a Room Database with a table (entity) of the Word class
-@Database(entities = arrayOf(Media::class), version = 1, exportSchema = false)
+@Database(entities = arrayOf(Media::class), version = 3, exportSchema = false)
 public abstract class MediaDatabase : RoomDatabase() {
 
     abstract fun mediaDao(): MediaDAO
@@ -22,15 +22,7 @@ public abstract class MediaDatabase : RoomDatabase() {
             super.onOpen(db)
             INSTANCE?.let { database ->
                 scope.launch {
-                    var mediaDAO = database.mediaDao()
-
-                    // Delete all content here.
-                    //mediaDAO.deleteAll()
-
-                    // Add sample words.
-                    var word = Media(1,"Hello", "Path")
-                    mediaDAO.insert(word)
-
+                    val mediaDao = database.mediaDao()
                 }
             }
         }
@@ -52,6 +44,7 @@ public abstract class MediaDatabase : RoomDatabase() {
                     "media_database"
                 )
                     .addCallback(MediaDatabaseCallback(scope))
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 // return instance

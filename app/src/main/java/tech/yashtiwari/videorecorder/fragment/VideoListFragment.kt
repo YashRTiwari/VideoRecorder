@@ -16,6 +16,7 @@ import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.VideoModel
 import tech.yashtiwari.videorecorder.activity.PlayerActivity
 import tech.yashtiwari.videorecorder.adapter.VideoListAdapter
+import tech.yashtiwari.videorecorder.db.Media
 import tech.yashtiwari.videorecorder.viewmodels.VMVideoList
 
 
@@ -40,32 +41,20 @@ class VideoListFragment : Fragment(), VideoListAdapter.ClickHandler {
     }
 
     private fun observeLiveData(){
-        viewModel.mlVideoList.observe(viewLifecycleOwner, Observer { t ->
+        viewModel.mlMediaList.observe(viewLifecycleOwner, Observer { t ->
             viewAdapter.addNewList(t)
         })
-
-        viewModel.mlMediaList.observe(viewLifecycleOwner, Observer { t ->
-            for (x in t){
-                Log.d(TAG, x.name)
-            }
-        })
-    }
-
-    override fun onStart() {
-        super.onStart()
-        viewModel.checkIfNewFileIsAdded()
     }
 
     companion object {
         @JvmStatic
         fun newInstance() = VideoListFragment()
-
         private val TAG = "VideoListFragment"
     }
 
-    override fun onVideoClicked(model: VideoModel) {
+    override fun onVideoClicked(model: Media) {
         val intent = Intent(activity, PlayerActivity::class.java)
-        intent.putExtra("path", model.file.absolutePath)
+        intent.putExtra("media", model)
         startActivity(intent)
     }
 

@@ -23,6 +23,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_record.*
+import tech.yashtiwari.videorecorder.MediaType
 import tech.yashtiwari.videorecorder.R
 import tech.yashtiwari.videorecorder.Utility
 import tech.yashtiwari.videorecorder.databinding.ActivityRecordBinding
@@ -51,7 +52,6 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var binding: ActivityRecordBinding
     private lateinit var localBroadcastManager: LocalBroadcastManager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record)
@@ -59,11 +59,8 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         supportActionBar?.hide();
-        localBroadcastManager = LocalBroadcastManager.getInstance(this)
 
-        binding = DataBindingUtil.setContentView(this@RecordActivity,
-            R.layout.activity_record
-        )
+        binding = DataBindingUtil.setContentView(this@RecordActivity, R.layout.activity_record)
         binding.viewModel = viewModel
 
         ibVideoCapture.setOnCheckedChangeListener{ _, isChecked ->
@@ -163,9 +160,10 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                 outputDirectory,
                 this
             )
-            videoCapture?.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
+            videoCapture.startRecording(file, Executors.newSingleThreadExecutor(), object : VideoCapture.OnVideoSavedCallback{
                 override fun onVideoSaved(file: File) {
-                    closeActivity(file.path)
+                    updateDb(file.path, file.name, duration, MediaType.VIDEO)
+//                    closeActivity(file.path)
                 }
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
                     Log.i(TAG, "Video Error: $message")
@@ -192,11 +190,16 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
                         throw error
                     }
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                        closeActivity(file.path)
+                        updateDb(file.path, file.name, 0, MediaType.PICTURE)
+//                        closeActivity(file.path)
                     }
                 })
         }
 
+    }
+
+    private fun updateDb(path: String, name: String, duration: Int, type: MediaType){
+        viewModel.addMediaToDB(path, name, duration, type)
     }
 
     private fun closeActivity(path: String , error: Boolean = false) {
@@ -222,12 +225,9 @@ class RecordActivity : AppCompatActivity(), LifecycleOwner {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-
             videoCapture = VideoCapture.Builder().build()
 
             imageCapture = ImageCapture.Builder().build()
-
-
 
             // Preview
             val preview = Preview.Builder()
